@@ -1,0 +1,59 @@
+# 依赖
+node_modules/
+target/
+*.jar
+
+# 编译输出
+frontend/dist/
+backend/target/
+
+# 音乐文件 (太大)
+music-data/
+
+# 环境配置
+.env
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+
+# 临时文件
+*.tmp
+*.bak
+
+# Claude AI 内部文件
+.claude/
+AGENTS.md
+
+# 个人文档 (不上传)
+我的简历*.pdf
+毕业论文*.docx
+*.backup-*.docx
+毕业设计过程考核记录.docx
+过程考核记录*.txt
+2022级毕业设计*.docx
+王淦-*.docx
+王淦-*.pdf
+*.backup-*.docx
+
+# 草稿文件
+文档填写内容.txt
+说明书_*.txt
+音乐岛开发日志*.md
+Music_Island_对话记录.txt
+phrase*.txt
+MUSIC_ISLAND_ARCHITECTURE.md
+
+# 开题报告
+王淦-软件22级开题报告2.docx
