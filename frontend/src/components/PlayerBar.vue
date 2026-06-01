@@ -1,43 +1,37 @@
 <template>
   <div class="player-bar">
-    <!-- Song info -->
     <div class="player-left">
       <img :src="playerStore.currentSong?.coverUrl || '/default-cover.png'"
         class="player-cover" :class="{ 'playing-pulse': playerStore.isPlaying }"
         @click="goToSong" />
       <div class="song-info">
-        <div class="song-title" @click="goToSong">{{ playerStore.currentSong?.title || '未选择' }}</div>
-        <div class="song-artist">{{ playerStore.currentSong?.artist || '' }}</div>
+        <div class="song-title" @click="goToSong">{{ playerStore.currentSong?.title || '未选择歌曲' }}</div>
+        <div class="song-artist">{{ playerStore.currentSong?.artist || 'Music Island' }}</div>
       </div>
-      <button class="action-btn" :title="liked ? '取消收藏' : '收藏'" @click="handleLike">
-        <span v-if="liked" class="icon-heart-filled">♥</span>
-        <span v-else class="icon-heart">♡</span>
+      <button type="button" class="action-btn" :title="liked ? '取消收藏' : '收藏'" @click.stop="handleLike">
+        <el-icon><StarFilled v-if="liked" /><Star v-else /></el-icon>
       </button>
-      <button class="action-btn" title="添加到歌单" @click="openPlaylistDialog">
-        <span class="icon-plus">＋</span>
+      <button type="button" class="action-btn" title="添加到歌单" @click.stop="openPlaylistDialog">
+        <el-icon><Plus /></el-icon>
       </button>
     </div>
 
-    <!-- Controls -->
     <div class="player-center">
       <div class="controls">
-        <button class="ctrl-btn" :title="modeLabel" @click="cycleMode">
-          <span v-if="playerStore.playMode === 'list'" class="icon-mode">🔀</span>
-          <span v-else-if="playerStore.playMode === 'random'" class="icon-mode">🔀</span>
-          <span v-else class="icon-mode">🔂</span>
+        <button type="button" class="ctrl-btn" :title="modeLabel" @click.stop="cycleMode">
+          <el-icon><RefreshRight v-if="playerStore.playMode === 'list'" /><Switch v-else-if="playerStore.playMode === 'random'" /><Refresh v-else /></el-icon>
         </button>
-        <button class="ctrl-btn" title="上一首" @click="playerStore.prev()">
-          <span class="icon-prev">⏮</span>
+        <button type="button" class="ctrl-btn" title="上一首" @click.stop="playerStore.prev()">
+          <el-icon><DArrowLeft /></el-icon>
         </button>
-        <button class="play-btn" @click="playerStore.togglePlay()">
-          <span v-if="playerStore.isPlaying" class="icon-pause">⏸</span>
-          <span v-else class="icon-play">▶</span>
+        <button type="button" class="play-btn" :title="playerStore.isPlaying ? '暂停' : '播放'" @click.stop="playerStore.togglePlay()">
+          <el-icon><VideoPause v-if="playerStore.isPlaying" /><VideoPlay v-else /></el-icon>
         </button>
-        <button class="ctrl-btn" title="下一首" @click="playerStore.next()">
-          <span class="icon-next">⏭</span>
+        <button type="button" class="ctrl-btn" title="下一首" @click.stop="playerStore.next()">
+          <el-icon><DArrowRight /></el-icon>
         </button>
-        <button class="ctrl-btn" title="播放队列" @click="showQueue = true">
-          <span class="icon-queue">☰</span>
+        <button type="button" class="ctrl-btn" title="播放队列" @click.stop="openQueueDialog">
+          <el-icon><Tickets /></el-icon>
         </button>
       </div>
       <div class="progress-bar">
@@ -50,12 +44,9 @@
       </div>
     </div>
 
-    <!-- Volume -->
     <div class="player-right">
-      <button class="ctrl-btn" title="静音" @click="toggleMute">
-        <span v-if="volume === 0" class="icon-vol">🔇</span>
-        <span v-else-if="volume < 40" class="icon-vol">🔈</span>
-        <span v-else class="icon-vol">🔊</span>
+      <button type="button" class="ctrl-btn" title="静音" @click.stop="toggleMute">
+        <el-icon><Mute v-if="volume === 0" /><Bell v-else /></el-icon>
       </button>
       <div class="volume-track" @click="setVolumeByClick" ref="volumeTrack">
         <div class="volume-fill" :style="{ width: volume + '%' }"></div>
@@ -65,20 +56,22 @@
         @loadedmetadata="onLoaded" @ended="onEnded" @error="onError" @canplay="onCanPlay" />
     </div>
 
-    <!-- Queue dialog -->
-    <el-dialog v-model="showQueue" title="播放队列" width="420px">
+    <el-dialog v-model="showQueue" title="播放队列" width="460px" append-to-body destroy-on-close>
       <el-empty v-if="!playerStore.queue.length" description="队列为空" />
       <div v-for="(song, i) in playerStore.queue" :key="i"
-        class="queue-item" :class="{ active: i === playerStore.queueIndex }">
+        class="queue-item" :class="{ active: i === playerStore.queueIndex }"
+        @click="playQueueIndex(i)">
         <span class="q-index">{{ i + 1 }}</span>
+        <img :src="song.coverUrl || '/default-cover.png'" class="q-cover" />
         <span class="q-title">{{ song.title }}</span>
         <span class="q-artist">{{ song.artist }}</span>
-        <button class="q-remove" @click.stop="removeFromQueue(i)">✕</button>
+        <button type="button" class="q-remove" title="移除" @click.stop="removeFromQueue(i)">
+          <el-icon><Close /></el-icon>
+        </button>
       </div>
     </el-dialog>
 
-    <!-- Add to playlist -->
-    <el-dialog v-model="showPlDialog" title="添加到歌单" width="400px">
+    <el-dialog v-model="showPlDialog" title="添加到歌单" width="400px" append-to-body destroy-on-close>
       <el-empty v-if="!playlists.length" description="暂无歌单" />
       <div v-for="pl in playlists" :key="pl.id" class="pl-option" @click="handleAddToPlaylist(pl.id)">{{ pl.name }}</div>
       <template #footer>
@@ -92,6 +85,10 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import {
+  Bell, Close, DArrowLeft, DArrowRight, Mute, Plus, Refresh, RefreshRight,
+  Star, StarFilled, Switch, Tickets, VideoPause, VideoPlay
+} from '@element-plus/icons-vue'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { useUserStore } from '../store/useUserStore'
 import { recordPlay, toggleLike, checkLiked, getMyPlaylists, addToPlaylist, createPlaylist } from '../api/user'
@@ -107,7 +104,7 @@ const volumeTrack = ref(null)
 const volume = ref(70)
 const showQueue = ref(false)
 const savedVolume = ref(70)
-const isLiked = ref(false)
+const liked = ref(false)
 const lastRecordedId = ref(null)
 const showPlDialog = ref(false)
 const playlists = ref([])
@@ -118,21 +115,29 @@ const progressPercent = computed(() => {
   return (playerStore.currentTime / playerStore.duration) * 100
 })
 
-const volumeIcon = computed(() => {
-  if (volume.value === 0) return '🔇'
-  if (volume.value < 40) return '🔈'
-  return '🔊'
+const modeLabel = computed(() => {
+  if (playerStore.playMode === 'random') return '随机播放'
+  if (playerStore.playMode === 'single') return '单曲循环'
+  return '列表循环'
 })
 
-// Progress track click
+function openQueueDialog() {
+  showQueue.value = true
+}
+
+function cycleMode() {
+  const modes = ['list', 'random', 'single']
+  const idx = modes.indexOf(playerStore.playMode)
+  playerStore.playMode = modes[(idx + 1) % modes.length]
+}
+
 function seekByClick(e) {
   if (!progressTrack.value || !audioRef.value) return
   const rect = progressTrack.value.getBoundingClientRect()
-  const ratio = (e.clientX - rect.left) / rect.width
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
   audioRef.value.currentTime = ratio * playerStore.duration
 }
 
-// Volume track click
 function setVolumeByClick(e) {
   if (!volumeTrack.value) return
   const rect = volumeTrack.value.getBoundingClientRect()
@@ -151,7 +156,7 @@ function onTimeUpdate() {
   if (audioRef.value) playerStore.updateProgress(audioRef.value.currentTime, audioRef.value.duration)
 }
 function onLoaded() {
-  if (audioRef.value) { playerStore.updateProgress(0, audioRef.value.duration); volume.value = Math.round(audioRef.value.volume * 100) }
+  if (audioRef.value) { playerStore.updateProgress(0, audioRef.value.duration); setVolume(volume.value) }
 }
 function onCanPlay() {
   if (audioRef.value && playerStore.isPlaying) {
@@ -163,6 +168,13 @@ function onCanPlay() {
 function onEnded() { playerStore.next() }
 function onError() { playerStore.isPlaying = false }
 function setVolume(val) { if (audioRef.value) audioRef.value.volume = val / 100 }
+
+function playQueueIndex(idx) {
+  playerStore.queueIndex = idx
+  playerStore.currentSong = playerStore.queue[idx]
+  playerStore.isPlaying = true
+  showQueue.value = false
+}
 
 function removeFromQueue(idx) {
   if (playerStore.queue.length <= 1) return
@@ -176,7 +188,7 @@ function removeFromQueue(idx) {
 
 async function handleLike() {
   const sid = playerStore.currentSong?.id; if (!sid) return
-  try { const res = await toggleLike(sid); isLiked.value = res.liked; ElMessage.success(res.liked ? '已收藏' : '已取消收藏') } catch (e) { ElMessage.error('请先登录') }
+  try { const res = await toggleLike(sid); liked.value = res.liked; ElMessage.success(res.liked ? '已收藏' : '已取消收藏') } catch (e) { ElMessage.error('请先登录') }
 }
 async function openPlaylistDialog() {
   if (!userStore.isLoggedIn) { ElMessage.warning('请先登录'); return }
@@ -193,7 +205,7 @@ async function handleCreateAndAdd() {
 }
 
 watch(() => playerStore.currentSong, async (song) => {
-  if (song?.id) { try { const res = await checkLiked(song.id); isLiked.value = res.liked } catch (e) { isLiked.value = false } }
+  if (song?.id) { try { const res = await checkLiked(song.id); liked.value = res.liked } catch (e) { liked.value = false } }
 }, { immediate: true })
 function goToSong() { const id = playerStore.currentSong?.id; if (id) router.push('/song/' + id) }
 
@@ -211,148 +223,138 @@ watch(() => playerStore.isPlaying, (p) => {
 
 <style scoped>
 .player-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; height: 90px; z-index: 1000;
-  background: var(--player-bg); border-top: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 24px;
-  transition: background 0.4s ease;
+  position: fixed;
+  bottom: 14px;
+  left: 244px;
+  right: 24px;
+  height: 88px;
+  z-index: 1000;
+  background: var(--player-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.18);
+  backdrop-filter: blur(28px) saturate(1.2);
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(360px, 1fr) minmax(150px, 210px);
+  align-items: center;
+  gap: 22px;
+  padding: 0 20px;
   user-select: none;
 }
-
-/* === LEFT: Song Info === */
-.player-left { width: 280px; display: flex; align-items: center; gap: 14px; }
+.player-left { min-width: 0; display: flex; align-items: center; gap: 12px; }
 .player-cover {
-  width: 56px; height: 56px; border-radius: 6px; object-fit: cover;
-  cursor: pointer; transition: transform 0.2s; flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  object-fit: cover;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.18);
 }
-.player-cover:hover { transform: scale(1.05); }
 .song-info { min-width: 0; flex: 1; }
 .song-title {
-  font-size: 14px; font-weight: 600; color: var(--text-secondary);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;
-  line-height: 1.3;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.song-title:hover { text-decoration: underline; }
+.song-title:hover { color: var(--accent); }
 .song-artist {
-  font-size: 12px; color: var(--text-dim); overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap; margin-top: 2px;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
-/* Action buttons */
-.action-btn {
-  background: none; border: none; cursor: pointer; padding: 6px;
-  color: var(--text-dim); font-size: 18px; line-height: 1;
-  transition: color 0.15s; flex-shrink: 0;
+.action-btn, .ctrl-btn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
-.action-btn:hover { color: var(--accent); }
-.icon-heart-filled { color: var(--accent); }
-.icon-plus { font-size: 20px; font-weight: 300; }
-
-/* === CENTER: Controls === */
-.player-center {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; gap: 12px; max-width: 640px; margin: 0 auto;
-}
-.controls { display: flex; align-items: center; gap: 24px; }
-
-/* Control buttons */
-.ctrl-btn {
-  background: none; border: none; cursor: pointer; padding: 4px;
-  color: var(--text-dim); font-size: 14px; line-height: 1;
-  transition: color 0.15s, transform 0.15s;
-}
-.ctrl-btn:hover { color: var(--text-primary); transform: scale(1.1); }
-.icon-mode { font-size: 14px; }
-.icon-prev, .icon-next { font-size: 14px; }
-.icon-queue { font-size: 16px; font-weight: 700; }
-
-/* Play button - large prominent circle */
+.action-btn:hover, .ctrl-btn:hover { color: var(--text-primary); background: var(--bg-hover); transform: translateY(-1px); }
+.player-center { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+.controls { display: flex; align-items: center; gap: 12px; }
 .play-btn {
-  width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
-  background: #fff; color: #000;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.2s ease, background 0.2s;
-  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-play);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 16px 34px var(--accent-glow);
+  transition: transform 0.18s ease, filter 0.18s ease;
 }
-.play-btn:hover { transform: scale(1.06); background: #f0f0f0; }
-.icon-play { font-size: 20px; margin-left: 3px; }
-.icon-pause { font-size: 18px; }
-
-/* Progress bar */
-.progress-bar {
-  display: flex; align-items: center; gap: 10px; width: 100%;
+.play-btn:hover { transform: scale(1.06); filter: brightness(1.06); }
+.progress-bar { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 680px; }
+.time { min-width: 38px; color: var(--text-dim); font-size: 11px; text-align: center; font-variant-numeric: tabular-nums; }
+.progress-track, .volume-track {
+  position: relative;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(128,128,128,0.24);
+  cursor: pointer;
 }
-.time {
-  font-size: 11px; color: var(--text-dim); min-width: 38px;
-  text-align: center; font-variant-numeric: tabular-nums;
+.progress-track { flex: 1; }
+.volume-track { width: 100px; }
+.progress-fill, .volume-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-play);
 }
-.progress-track {
-  flex: 1; height: 4px; background: rgba(128,128,128,0.25);
-  border-radius: 2px; cursor: pointer; position: relative;
-  transition: height 0.15s;
+.progress-thumb, .volume-thumb {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
 }
-.progress-track:hover { height: 6px; }
-.progress-fill {
-  height: 100%; background: var(--accent); border-radius: 2px;
-  position: absolute; left: 0; top: 0; transition: width 0.1s linear;
-}
-.progress-track:hover .progress-fill { background: #1db954; }
-.progress-thumb {
-  position: absolute; top: 50%; transform: translate(-50%, -50%);
-  width: 12px; height: 12px; border-radius: 50%; background: #fff;
-  opacity: 0; transition: opacity 0.2s; pointer-events: none;
-}
-.progress-track:hover .progress-thumb { opacity: 1; }
-
-/* === RIGHT: Volume === */
-.player-right {
-  width: 200px; display: flex; align-items: center; gap: 10px;
-  justify-content: flex-end;
-}
-.icon-vol { font-size: 14px; }
-
-.volume-track {
-  width: 100px; height: 4px; background: rgba(128,128,128,0.25);
-  border-radius: 2px; cursor: pointer; position: relative;
-  transition: height 0.15s;
-}
-.volume-track:hover { height: 6px; }
-.volume-fill {
-  height: 100%; background: var(--text-muted); border-radius: 2px;
-  position: absolute; left: 0; top: 0;
-}
-.volume-track:hover .volume-fill { background: #1db954; }
-.volume-thumb {
-  position: absolute; top: 50%; transform: translate(-50%, -50%);
-  width: 12px; height: 12px; border-radius: 50%; background: #fff;
-  opacity: 0; transition: opacity 0.2s; pointer-events: none;
-}
-.volume-track:hover .volume-thumb { opacity: 1; }
-
-/* === Queue dialog === */
+.progress-track:hover .progress-thumb, .volume-track:hover .volume-thumb { opacity: 1; }
+.player-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .queue-item {
-  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-  border-radius: 8px; transition: background 0.15s; color: var(--text-muted);
+  display: grid;
+  grid-template-columns: 28px 42px minmax(0, 1fr) 94px 28px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
 }
-.queue-item:hover { background: var(--bg-hover); }
-.queue-item.active { color: var(--accent); background: var(--bg-active); }
-.q-index { width: 24px; font-size: 12px; color: var(--text-dim); text-align: center; }
-.q-title { flex: 1; font-size: 14px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.q-artist { font-size: 12px; color: var(--text-dim); width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.q-remove { background: none; border: none; cursor: pointer; color: var(--text-dim); font-size: 14px; opacity: 0; transition: opacity 0.15s; }
+.queue-item:hover, .queue-item.active { background: var(--bg-active); color: var(--text-primary); }
+.q-index { color: var(--text-dim); font-size: 12px; text-align: center; }
+.q-cover { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; }
+.q-title, .q-artist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.q-title { color: var(--text-secondary); font-size: 13px; font-weight: 750; }
+.q-artist { color: var(--text-dim); font-size: 12px; }
+.q-remove { border: 0; background: transparent; color: var(--text-dim); cursor: pointer; opacity: 0; }
 .queue-item:hover .q-remove { opacity: 1; }
-.q-remove:hover { color: var(--accent); }
-
-/* === Playlist dialog === */
-.pl-option {
-  padding: 14px 16px; cursor: pointer; border-radius: 8px;
-  transition: all 0.15s; color: var(--text-muted); font-size: 14px;
-}
+.pl-option { padding: 14px 16px; cursor: pointer; border-radius: 10px; color: var(--text-muted); }
 .pl-option:hover { background: var(--bg-active); color: var(--accent); }
 
-/* === Dark theme === */
-[data-theme="dark"] .player-bar {
-  background: rgba(18, 18, 18, 0.95);
-  backdrop-filter: blur(24px);
+@media (max-width: 1100px) {
+  .player-bar { left: 18px; right: 18px; grid-template-columns: minmax(210px, 280px) 1fr 140px; }
 }
-[data-theme="dark"] .play-btn { background: #fff; color: #000; }
 </style>

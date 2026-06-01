@@ -68,20 +68,21 @@ watch(() => userStore.playlistVersion, () => loadPlaylists())
 
 <style scoped>
 .sidebar {
-  width: 220px; min-height: calc(100vh - 64px);
-  background: var(--bg-surface);
+  width: 220px; height: 100%; flex-shrink: 0;
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(22px);
   border-right: 1px solid var(--border);
-  padding: 8px 0; overflow-y: auto;
+  padding: 12px 0; overflow-y: auto;
 }
 .menu { display: flex; flex-direction: column; padding: 8px; }
 .menu-item {
   display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; border-radius: 8px;
+  padding: 12px 16px; border-radius: 12px;
   font-size: 14px; font-weight: 500; color: var(--text-muted);
   transition: all 0.2s; margin: 2px 0;
 }
 .menu-item:hover { background: var(--bg-hover); color: var(--text-primary); }
-.menu-item.active { color: var(--accent); background: var(--bg-active); }
+.menu-item.active { color: var(--text-primary); background: var(--bg-active); box-shadow: inset 3px 0 0 var(--accent); }
 
 .playlist-section { margin-top: 12px; padding: 0 8px; }
 .section-label {
@@ -91,11 +92,11 @@ watch(() => userStore.playlistVersion, () => loadPlaylists())
 }
 .pl-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 16px; border-radius: 8px; margin: 2px 0;
+  padding: 8px 16px; border-radius: 12px; margin: 2px 0;
   font-size: 13px; color: var(--text-dim); transition: all 0.2s;
 }
 .pl-item:hover { background: var(--bg-hover); color: var(--text-primary); }
-.pl-item.pl-active { color: var(--accent); background: var(--bg-active); }
+.pl-item.pl-active { color: var(--text-primary); background: var(--bg-active); }
 .pl-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
 .pl-cover-mini { width: 36px; height: 36px; flex-shrink: 0;

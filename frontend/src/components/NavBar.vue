@@ -2,7 +2,7 @@
   <div class="navbar">
     <div class="nav-left">
       <router-link to="/" class="logo">
-        <span class="logo-icon">♪</span>
+        <span class="logo-icon"><Headset /></span>
         <span class="logo-text">Music Island</span>
       </router-link>
       <router-link to="/discover" class="nav-link">发现</router-link>
@@ -53,7 +53,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../store/useUserStore'
 import { useThemeStore } from '../store/useThemeStore'
-import { ArrowDown, Star, Clock, Setting, SwitchButton } from '@element-plus/icons-vue'
+import { ArrowDown, Star, Clock, Setting, SwitchButton, Headset } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -67,7 +67,7 @@ function logout() { userStore.logout(); router.push('/') }
 <style scoped>
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; height: 64px; z-index: 1000;
-  background: var(--nav-bg); backdrop-filter: blur(20px);
+  background: var(--nav-bg); backdrop-filter: blur(24px) saturate(1.2);
   display: flex; align-items: center; padding: 0 28px;
   border-bottom: 1px solid var(--border);
   transition: background 0.4s ease;
@@ -75,19 +75,20 @@ function logout() { userStore.logout(); router.push('/') }
 .nav-left { display: flex; align-items: center; gap: 32px; }
 .logo { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .logo-icon {
-  font-size: 22px; color: var(--accent);
+  font-size: 18px; color: #fff;
   display: flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 10px;
-  background: var(--accent-glow);
+  width: 38px; height: 38px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--gradient-2));
+  box-shadow: 0 12px 28px var(--accent-glow);
 }
-.logo-text { font-size: 19px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
+.logo-text { font-size: 19px; font-weight: 850; color: var(--text-primary); letter-spacing: 0; }
 .nav-link { font-size: 14px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
 .nav-link:hover { color: var(--text-primary); }
 .nav-link.router-link-active { color: var(--text-primary); }
 .nav-center { flex: 1; display: flex; justify-content: center; padding: 0 40px; }
 .search-input { max-width: 480px; }
 .nav-right { display: flex; align-items: center; gap: 12px; }
-.theme-btn { color: var(--text-muted); border-color: var(--border); transition: all 0.2s; }
+.theme-btn { color: var(--text-muted); border-color: var(--border); background: var(--glass-bg); transition: all 0.2s; }
 .theme-btn:hover { color: var(--accent); border-color: var(--accent); }
 .user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background 0.2s; }
 .user-info:hover { background: var(--bg-hover); }

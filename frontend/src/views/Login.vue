@@ -1,7 +1,18 @@
 <template>
   <div class="auth-page">
-    <div class="auth-card">
-      <h1>登录 Music Island</h1>
+    <div class="auth-showcase">
+      <div class="mi-kicker">Welcome Back</div>
+      <h1>回到音乐岛</h1>
+      <p>继续收听你的播放历史，让推荐算法更懂你的下一首心动旋律。</p>
+      <div class="auth-covers">
+        <img src="/showcase/login-1.webp" />
+        <img src="/showcase/login-2.jpg" />
+        <img src="/showcase/login-3.webp" />
+        <img src="/showcase/login-4.jpg" />
+      </div>
+    </div>
+    <div class="auth-card mi-card">
+      <h2>登录 Music Island</h2>
       <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" prefix-icon="User" />
@@ -59,16 +70,52 @@ async function handleLogin() {
 
 <style scoped>
 .auth-page {
-  min-height: calc(100vh - 60px);
-  display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: calc(100vh - 120px);
+  display: grid;
+  grid-template-columns: minmax(420px, 0.95fr) 440px;
+  gap: 42px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto;
 }
+.auth-showcase h1 {
+  margin-top: 12px;
+  color: var(--text-primary);
+  font-size: 58px;
+  line-height: 1.05;
+  font-weight: 920;
+}
+.auth-showcase p {
+  max-width: 520px;
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.8;
+}
+.auth-covers {
+  display: grid;
+  grid-template-columns: repeat(4, 112px);
+  gap: 14px;
+  margin-top: 34px;
+}
+.auth-covers img {
+  width: 112px;
+  height: 112px;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+}
+.auth-covers img:nth-child(even) { transform: translateY(22px); }
 .auth-card {
-  width: 400px; background: #fff; border-radius: 12px;
-  padding: 40px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  width: 100%;
+  padding: 38px;
 }
-.auth-card h1 { text-align: center; margin-bottom: 32px; color: var(--text-primary); }
+.auth-card h2 { text-align: center; margin-bottom: 32px; color: var(--text-primary); font-size: 26px; font-weight: 900; }
 .auth-btn { width: 100%; margin-top: 8px; }
 .auth-link { text-align: center; margin-top: 16px; color: var(--text-dim); font-size: 14px; }
 .auth-link a { color: var(--accent); }
+@media (max-width: 980px) {
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-showcase { display: none; }
+}
 </style>

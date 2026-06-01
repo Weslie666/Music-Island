@@ -1,14 +1,23 @@
 <template>
-  <div class="search-page">
-    <h2 class="page-title">搜索结果：{{ keyword }}</h2>
-    <div class="song-grid" v-if="songs.length">
-      <div v-for="song in songs" :key="song.id" class="song-card" @click="playSong(song)">
-        <img :src="song.coverUrl || '/default-cover.png'" class="card-cover" />
-        <div class="card-info">
-          <div class="card-title">{{ song.title }}</div>
-          <div class="card-artist">{{ song.artist }}</div>
-        </div>
+  <div class="search-page mi-page">
+    <div class="search-header mi-card">
+      <div>
+        <div class="mi-kicker">Search Results</div>
+        <h1>搜索：{{ keyword }}</h1>
       </div>
+      <span class="mi-pill">{{ total }} 个结果</span>
+    </div>
+    <div class="mi-song-grid" v-if="songs.length">
+      <article v-for="song in songs" :key="song.id" class="mi-song-card" @click="playSong(song)">
+        <div class="mi-cover-wrap">
+          <img :src="song.coverUrl || '/default-cover.png'" class="mi-cover" />
+          <button class="mi-play-fab" title="播放"><el-icon><VideoPlay /></el-icon></button>
+        </div>
+        <div class="mi-card-info">
+          <div class="mi-card-title">{{ song.title }}</div>
+          <div class="mi-card-artist">{{ song.artist }}</div>
+        </div>
+      </article>
     </div>
     <el-empty v-else description="未找到相关歌曲" />
     <div class="pagination" v-if="total > limit">
@@ -26,6 +35,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { VideoPlay } from '@element-plus/icons-vue'
 import { getSongs } from '../api/song'
 import { usePlayerStore } from '../store/usePlayerStore'
 
@@ -64,18 +74,18 @@ function playSong(song) {
 </script>
 
 <style scoped>
-.search-page { max-width: 1200px; margin: 0 auto; }
-.page-title { font-size: 22px; margin-bottom: 20px; color: var(--text-primary); }
-.song-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
-.song-card {
-  background: #fff; border-radius: 8px; overflow: hidden; cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+.search-header {
+  margin-bottom: 24px;
+  padding: 28px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
 }
-.song-card:hover { transform: translateY(-4px); box-shadow: var(--card-hover-shadow); }
-.card-cover { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; transition: transform 0.4s ease; }
-.song-card:hover .card-cover { transform: scale(1.06); }
-.card-info { padding: 10px; }
-.card-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card-artist { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.search-header h1 {
+  margin-top: 8px;
+  color: var(--text-primary);
+  font-size: 36px;
+  font-weight: 900;
+}
 .pagination { display: flex; justify-content: center; margin-top: 24px; }
 </style>

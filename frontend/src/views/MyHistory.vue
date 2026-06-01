@@ -1,6 +1,12 @@
 <template>
-  <div class="my-history">
-    <h2 class="page-title">播放历史</h2>
+  <div class="my-history mi-page">
+    <div class="page-head mi-card">
+      <div>
+        <div class="mi-kicker">Listening History</div>
+        <h1>播放历史</h1>
+      </div>
+      <span class="mi-pill">{{ total }} 条记录</span>
+    </div>
     <el-empty v-if="!records.length && !loading" description="还没有播放记录" />
     <div class="history-list" v-if="records.length">
       <div v-for="item in records" :key="item.id + '-' + item.play_time" class="history-item"
@@ -65,14 +71,15 @@ onMounted(() => load())
 </script>
 
 <style scoped>
-.my-history { max-width: 800px; margin: 0 auto; }
-.page-title { font-size: 22px; margin: 24px 0 16px; color: var(--text-primary); }
-.history-list { background: #fff; border-radius: 8px; }
+.my-history { max-width: 980px; }
+.page-head { display: flex; justify-content: space-between; align-items: end; padding: 28px 32px; margin-bottom: 24px; }
+.page-head h1 { margin-top: 8px; color: var(--text-primary); font-size: 36px; font-weight: 900; }
+.history-list { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); overflow: hidden; }
 .history-item {
   display: flex; align-items: center; gap: 14px; padding: 10px 16px;
   cursor: pointer; transition: background 0.15s;
 }
-.history-item:hover { background: var(--bg-surface); }
+.history-item:hover { background: var(--bg-hover); }
 .h-index { width: 28px; text-align: center; font-size: 13px; color: var(--text-dim); }
 .h-cover { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
 .h-info { flex: 1; min-width: 0; }

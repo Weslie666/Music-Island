@@ -1,6 +1,12 @@
 <template>
-  <div class="my-favorites">
-    <h2 class="page-title">我的收藏</h2>
+  <div class="my-favorites mi-page">
+    <div class="page-head mi-card">
+      <div>
+        <div class="mi-kicker">My Library</div>
+        <h1>我的收藏</h1>
+      </div>
+      <span class="mi-pill">{{ total }} 首歌曲</span>
+    </div>
     <el-empty v-if="!songs.length && !loading" description="还没有收藏歌曲" />
     <div class="song-grid" v-if="songs.length">
       <div v-for="song in songs" :key="song.id" class="song-card">
@@ -56,11 +62,11 @@ onMounted(() => load())
 </script>
 
 <style scoped>
-.my-favorites { max-width: 1280px; margin: 0 auto; }
-.page-title { font-size: 22px; font-weight: 700; margin: 24px 0 16px; color: var(--text-primary); letter-spacing: -0.5px; }
-.song-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.page-head { display: flex; justify-content: space-between; align-items: end; padding: 28px 32px; margin-bottom: 24px; }
+.page-head h1 { margin-top: 8px; color: var(--text-primary); font-size: 36px; font-weight: 900; }
+.song-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 18px; }
 .song-card {
-  background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border);
+  position: relative; background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border); box-shadow: var(--card-shadow);
 }
 .song-card:hover { transform: translateY(-4px); box-shadow: var(--card-hover-shadow); }
 .card-cover { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
@@ -70,4 +76,14 @@ onMounted(() => load())
 .unlike-btn { position: absolute; top: 6px; right: 6px; opacity: 0; transition: opacity 0.15s; }
 .song-card:hover .unlike-btn { opacity: 1; }
 .pagination { margin-top: 24px; justify-content: center; display: flex; }
+
+@media (max-width: 1280px) {
+  .song-grid { gap: 16px; }
+}
+@media (max-width: 980px) {
+  .song-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+}
+@media (max-width: 680px) {
+  .song-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+}
 </style>

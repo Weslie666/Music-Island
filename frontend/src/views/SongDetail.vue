@@ -1,49 +1,62 @@
 <template>
-  <div class="song-detail" v-if="song">
-    <div class="detail-header">
+  <div class="song-detail mi-page" v-if="song">
+    <section class="detail-hero mi-card">
+      <div class="ambient" :style="ambientStyle"></div>
       <div class="cover-wrap">
         <img :src="song.coverUrl || '/default-cover.png'" class="detail-cover" />
-        <div class="cover-shadow"></div>
       </div>
       <div class="detail-info">
-        <span class="genre-tag" v-if="song.genre">{{ song.genre }}</span>
+        <span class="mi-pill" v-if="song.genre">{{ song.genre }}</span>
         <h1>{{ song.title }}</h1>
         <p class="artist">{{ song.artist }}</p>
-        <p class="meta">
-          <span v-if="song.album">专辑：{{ song.album }}</span>
-          <span v-if="song.duration">时长：{{ formatTime(song.duration) }}</span>
-        </p>
+        <div class="meta-line">
+          <span v-if="song.album">{{ song.album }}</span>
+          <span v-if="song.duration">{{ formatTime(song.duration) }}</span>
+        </div>
         <div class="actions">
-          <el-button type="primary" size="large" round class="btn-play" @click="play">▶ 播放</el-button>
-          <el-button size="large" round @click="handleToggleLike" :class="{ 'btn-liked': liked }">
-            {{ liked ? '♥ 已收藏' : '♡ 收藏' }}
+          <el-button type="primary" size="large" round class="btn-play" @click="play">
+            <el-icon><VideoPlay /></el-icon> 播放
           </el-button>
-          <el-button size="large" round @click="showPlaylistDialog = true">＋ 歌单</el-button>
+          <el-button size="large" round @click="handleToggleLike" :class="{ 'btn-liked': liked }">
+            <el-icon><StarFilled v-if="liked" /><Star v-else /></el-icon>
+            {{ liked ? '已收藏' : '收藏' }}
+          </el-button>
+          <el-button size="large" round @click="showPlaylistDialog = true">
+            <el-icon><FolderAdd /></el-icon> 歌单
+          </el-button>
         </div>
         <div class="stats">
-          <div class="stat-item"><span class="stat-num">{{ formatCount(song.playCount || 0) }}</span> 次播放</div>
-          <div class="stat-item"><span class="stat-num">{{ formatCount(song.likeCount || 0) }}</span> 次收藏</div>
+          <div><strong>{{ formatCount(song.playCount || 0) }}</strong><span>播放次数</span></div>
+          <div><strong>{{ formatCount(song.likeCount || 0) }}</strong><span>收藏次数</span></div>
+          <div><strong>{{ similarSongs.length }}</strong><span>相似推荐</span></div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="similar-section" v-if="similarSongs.length">
-      <h3 class="similar-title">相似歌曲</h3>
-      <div class="song-grid">
-        <div v-for="s in similarSongs" :key="s.id" class="song-card song-card-hover" @click="goToSong(s.id)">
-          <div class="card-img-wrap">
-            <img :src="s.coverUrl || '/default-cover.png'" class="card-cover" />
-            <div class="card-play-btn">▶</div>
-          </div>
-          <div class="card-info">
-            <div class="card-title">{{ s.title }}</div>
-            <div class="card-artist">{{ s.artist }}</div>
-          </div>
+    <section class="similar-section" v-if="similarSongs.length">
+      <div class="section-head">
+        <div>
+          <div class="mi-kicker">Because You Like This</div>
+          <h2 class="mi-title">相似歌曲</h2>
         </div>
       </div>
-    </div>
+      <div class="mi-song-grid similar-grid">
+        <article v-for="s in similarSongs" :key="s.id" class="mi-song-card" @click="goToSong(s.id)">
+          <div class="mi-cover-wrap">
+            <img :src="s.coverUrl || '/default-cover.png'" class="mi-cover" />
+            <button class="mi-play-fab" title="查看"><el-icon><ArrowRight /></el-icon></button>
+          </div>
+          <div class="mi-card-info">
+            <div class="mi-card-title">{{ s.title }}</div>
+            <div class="mi-card-artist">{{ s.artist }}</div>
+          </div>
+        </article>
+      </div>
+    </section>
 
-    <CommentSection v-if="song" :songId="song.id" />
+    <section class="comments-shell mi-card">
+      <CommentSection v-if="song" :songId="song.id" />
+    </section>
 
     <el-dialog v-model="showPlaylistDialog" title="添加到歌单" width="400px">
       <el-empty v-if="!playlists.length" description="暂无歌单" />
@@ -58,8 +71,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { VideoPlay, Star, StarFilled, FolderAdd, ArrowRight } from '@element-plus/icons-vue'
 import { getSongById } from '../api/song'
 import { toggleLike, checkLiked, getMyPlaylists, addToPlaylist, createPlaylist } from '../api/user'
 import { getSimilarSongs } from '../api/recommend'
@@ -80,11 +94,15 @@ const playlists = ref([])
 const newPlName = ref('')
 const similarSongs = ref([])
 
+const ambientStyle = computed(() => ({
+  backgroundImage: `linear-gradient(90deg, var(--bg-surface-solid) 0%, rgba(0,0,0,0) 100%), url("${song.value?.coverUrl || '/default-cover.png'}")`
+}))
+
 async function loadSong(sid) {
   try { song.value = await getSongById(sid) } catch (e) { return }
-  try { const r = await checkLiked(sid); liked.value = r.liked } catch (e) {}
-  try { playlists.value = await getMyPlaylists() } catch (e) {}
-  try { similarSongs.value = await getSimilarSongs(sid, 6) } catch (e) {}
+  try { const r = await checkLiked(sid); liked.value = r.liked } catch (e) { liked.value = false }
+  try { playlists.value = await getMyPlaylists() } catch (e) { playlists.value = [] }
+  try { similarSongs.value = await getSimilarSongs(sid, 6) } catch (e) { similarSongs.value = [] }
 }
 
 onMounted(() => loadSong(route.params.id))
@@ -103,50 +121,85 @@ async function handleCreateAndAdd() {
 </script>
 
 <style scoped>
-.song-detail { max-width: 960px; margin: 0 auto; }
-.detail-header { display: flex; gap: 40px; margin-bottom: 40px; }
-.cover-wrap { position: relative; flex-shrink: 0; }
+.detail-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  padding: 44px;
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 44px;
+  align-items: center;
+}
+.ambient {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.24;
+  filter: blur(34px) saturate(1.2);
+  transform: scale(1.08);
+  pointer-events: none;
+}
+[data-theme="dark"] .ambient { opacity: 0.38; }
+.cover-wrap, .detail-info { position: relative; z-index: 1; }
 .detail-cover {
-  width: 300px; height: 300px; border-radius: 16px; object-fit: cover;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.3); position: relative; z-index: 1;
+  width: 320px;
+  height: 320px;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.34);
 }
-.cover-shadow {
-  position: absolute; width: 260px; height: 260px; border-radius: 16px;
-  background: inherit; filter: blur(60px); opacity: 0.4;
-  top: 60px; left: 20px; z-index: 0;
+.detail-info { display: flex; flex-direction: column; align-items: flex-start; }
+.detail-info h1 {
+  max-width: 760px;
+  margin-top: 18px;
+  color: var(--text-primary);
+  font-size: 56px;
+  line-height: 1.04;
+  font-weight: 920;
+  letter-spacing: 0;
 }
-.detail-info { flex: 1; display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
-.genre-tag { display: inline-block; padding: 4px 14px; border-radius: 20px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 600; width: fit-content; }
-.detail-info h1 { font-size: 36px; color: var(--text-primary); font-weight: 800; letter-spacing: -1px; line-height: 1.2; }
-.artist { font-size: 20px; color: var(--accent); font-weight: 600; }
-.meta { font-size: 14px; color: var(--text-dim); display: flex; gap: 20px; }
-.actions { display: flex; gap: 12px; margin-top: 20px; }
-.btn-play { padding: 12px 32px; font-weight: 600; }
+.artist { margin-top: 12px; color: var(--accent); font-size: 22px; font-weight: 800; }
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.actions .el-button { font-weight: 800; }
+.btn-play { padding: 12px 32px; }
 .btn-liked { color: var(--accent); border-color: var(--accent); }
-.stats { display: flex; gap: 32px; margin-top: 16px; }
-.stat-item { font-size: 13px; color: var(--text-dim); }
-.stat-num { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-
-.similar-section { margin-top: 48px; }
-.similar-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; color: var(--text-primary); }
-.song-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
-.song-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.3s; border: 1px solid var(--border); }
-.song-card:hover { transform: translateY(-4px); box-shadow: var(--card-hover-shadow); }
-.card-img-wrap { position: relative; overflow: hidden; }
-.card-cover { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; transition: transform 0.4s; }
-.song-card:hover .card-cover { transform: scale(1.06); }
-.card-play-btn {
-  position: absolute; bottom: 8px; right: 8px; z-index: 2;
-  width: 38px; height: 38px; border-radius: 50%; background: #1db954; color: #fff;
-  display: flex; align-items: center; justify-content: center; font-size: 13px;
-  opacity: 0; transform: translateY(8px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 130px));
+  gap: 12px;
+  margin-top: 30px;
 }
-.song-card:hover .card-play-btn { opacity: 1; transform: translateY(0); }
-.card-info { padding: 10px 12px; }
-.card-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card-artist { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-.pl-option { padding: 14px 16px; cursor: pointer; border-radius: 8px; transition: all 0.15s; color: var(--text-muted); }
+.stats div {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--glass-bg);
+}
+.stats strong { display: block; color: var(--text-primary); font-size: 22px; line-height: 1; }
+.stats span { display: block; margin-top: 7px; color: var(--text-muted); font-size: 12px; }
+.section-head { margin: 38px 0 18px; }
+.similar-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.comments-shell { margin-top: 38px; padding: 8px 24px 24px; }
+.pl-option { padding: 14px 16px; cursor: pointer; border-radius: 10px; transition: all 0.15s; color: var(--text-muted); }
 .pl-option:hover { background: var(--bg-active); color: var(--accent); }
+
+@media (max-width: 1180px) {
+  .detail-hero { grid-template-columns: 280px 1fr; gap: 34px; }
+  .detail-cover { width: 270px; height: 270px; }
+  .detail-info h1 { font-size: 46px; }
+  .similar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+  .detail-hero { grid-template-columns: 1fr; padding: 28px; }
+}
 </style>

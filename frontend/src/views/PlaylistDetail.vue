@@ -1,6 +1,6 @@
 <template>
-  <div class="playlist-detail" v-if="playlist">
-    <div class="pl-header">
+  <div class="playlist-detail mi-page" v-if="playlist">
+    <div class="pl-header mi-card">
       <div class="pl-cover-wrapper">
         <img v-if="coverImages.length <= 3"
           :src="coverImages[0] || '/default-cover.png'" class="pl-cover" />
@@ -53,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getPlaylistDetail, updatePlaylist, deletePlaylist, removeFromPlaylist } from '../api/user'
 import { usePlayerStore } from '../store/usePlayerStore'
@@ -78,13 +78,24 @@ const coverImages = computed(() =>
   songs.value.map(s => s.coverUrl).filter(Boolean)
 )
 
-onMounted(async () => {
+async function loadPlaylist(id) {
+  playlist.value = null
+  songs.value = []
+  showEdit.value = false
   try {
-    const data = await getPlaylistDetail(route.params.id)
+    const data = await getPlaylistDetail(id)
     playlist.value = data.playlist
     songs.value = data.songs || []
+    form.value = {
+      name: data.playlist?.name || '',
+      description: data.playlist?.description || ''
+    }
   } catch (e) { /* not found */ }
-})
+}
+
+watch(() => route.params.id, (id) => {
+  if (id) loadPlaylist(id)
+}, { immediate: true })
 
 function playSong(song, idx) {
   playerStore.play(song, songs.value)
@@ -115,8 +126,8 @@ async function handleUpdate() {
 </script>
 
 <style scoped>
-.playlist-detail { max-width: 900px; margin: 0 auto; }
-.pl-header { display: flex; gap: 28px; margin: 24px 0; }
+.playlist-detail { max-width: 1100px; }
+.pl-header { display: flex; gap: 30px; margin-bottom: 28px; padding: 32px; align-items: center; }
 .pl-cover-wrapper { width: 220px; height: 220px; flex-shrink: 0; }
 .pl-cover { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
 .pl-cover-grid {
@@ -125,16 +136,16 @@ async function handleUpdate() {
 }
 .pl-cover-cell { width: 100%; height: 100%; object-fit: cover; }
 .pl-info { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.pl-info h1 { font-size: 26px; color: var(--text-primary); font-weight: 700; }
+.pl-info h1 { font-size: 38px; color: var(--text-primary); font-weight: 900; }
 .pl-desc { font-size: 14px; color: var(--text-muted); }
 .pl-meta { font-size: 14px; color: var(--text-dim); }
 .pl-actions { display: flex; gap: 8px; margin-top: 12px; }
-.song-list { background: var(--bg-surface); border-radius: 10px; border: 1px solid var(--border); }
+.song-list { background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--card-shadow); overflow: hidden; }
 .song-row {
   display: flex; align-items: center; gap: 14px; padding: 12px 16px;
   cursor: pointer; transition: background 0.15s; border-radius: 8px;
 }
-.song-row:hover { background: var(--card-bg); }
+.song-row:hover { background: var(--bg-hover); }
 .s-index { width: 28px; text-align: center; font-size: 13px; color: var(--text-dim); }
 .s-cover { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
 .s-info { flex: 1; min-width: 0; }
